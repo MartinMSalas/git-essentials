@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true # Enables discovery client integration for routing
+          lower-case-service-id: true # Optional: routes based on lowercase service IDs
+      routes:
+        - id: personal-admin-route
+          uri: lb://PERSONAL-ADMIN-SERVICE # Service ID registered with Eureka
+          predicates:
+            - Path=/admin/**
+          filters: # Optional: Example filter to strip the /admin prefix if your backend service doesn't expect it
+            - StripPrefix=1 # e.g. /admin/person/1 -> /person/1 to personal-admin-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # URL of the Eureka server
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true # Recommended for Dockerized environments, if applicable
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG # For detailed gateway logging
+    reactor.netty.http.client: DEBUG # For HTTP client call logging (useful for debugging routes)
+    org.springframework.security: DEBUG # If Spring Security is added later
+    com.example.apigateway: DEBUG
